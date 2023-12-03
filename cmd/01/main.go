@@ -7,37 +7,84 @@ import (
 	"strings"
 )
 
-func main() {
-	// Initate finalTotal variable
-	var finalTotal int
+type Digits int
 
-	f, err := os.ReadFile("input.txt")
+const (
+	One Digits = iota + 1
+	Two
+	Three
+	Four
+	Five
+	Six
+	Seven
+	Eight
+	Nine
+)
+
+var digits = map[string]Digits{
+	"one":   One,
+	"two":   Two,
+	"three": Three,
+	"four":  Four,
+	"five":  Five,
+	"six":   Six,
+	"seven": Seven,
+	"eight": Eight,
+	"nine":  Nine,
+}
+
+func main() {
+	var finalTotal int
+	f, err := os.ReadFile("input2.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	input := strings.Split(string(f), "\n")
+	inputs := strings.Split(string(f), "\n")
 
-	for _, l := range input {
-		var first string
-		var second string
+	for _, input := range inputs {
+		first, last := getDigits(input)
+		concantedString, _ := strconv.Atoi(strconv.Itoa(first) + strconv.Itoa(last))
+		log.Println(concantedString)
+		finalTotal += concantedString
+	}
 
-		splitLine := strings.Split(l, "")
+	log.Println(finalTotal)
+}
 
-		// Check each char in word and find first and last digit
-		for i := 0; i < len(splitLine); i++ {
-			_, err := strconv.Atoi(splitLine[i])
-			if err != nil {
-				continue
-			}
-			if first == "" {
-				first = splitLine[i]
-			}
-			second = splitLine[i]
+func getDigits(input string) (int, int) {
+	var first int
+	var firstDigitIndex int
+	var last int
+	var lastIndex int
+
+	for i, c := range input {
+		v, err := strconv.Atoi(string(c))
+		if err != nil {
+			continue
 		}
 
-		concatVal, _ := strconv.Atoi(first + second)
-		finalTotal += concatVal
+		if first == 0 {
+			first = v
+			firstDigitIndex = i
+		}
+		last = v
+		lastIndex = i
 	}
-	log.Println(finalTotal)
+
+	for k := range digits {
+		strIndex := strings.Index(input, k)
+		lastStrIndex := strings.LastIndex(input, k)
+		if strIndex != -1 {
+			if strIndex <= firstDigitIndex {
+				first = int(digits[k])
+				firstDigitIndex = strIndex
+			}
+			if lastStrIndex >= lastIndex {
+				last = int(digits[k])
+				lastIndex = lastStrIndex
+			}
+		}
+	}
+	return first, last
 }
